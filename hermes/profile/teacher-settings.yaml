@@ -1,0 +1,14 @@
+display:
+  busy_input_mode: queue
+  platforms:
+    telegram:
+      busy_ack_detail: false
+      busy_steer_ack_enabled: false
+      long_running_notifications: false
+platforms:
+  telegram:
+    extra:
+      command_menu:
+        max_commands: 6
+        priority_mode: replace
+        priority: [help, new, stop, model, reasoning, usage]

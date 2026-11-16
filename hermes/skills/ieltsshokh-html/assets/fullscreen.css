@@ -1,0 +1,10 @@
+/* IELTSSHOKH full screen: toggle icons + "Return to full screen" pill (same dark-pill + blue as the Reading header) */
+[data-shkh-fs][hidden]{display:none!important}
+[data-shkh-fs] .fs-off{display:none}
+body.is-fs [data-shkh-fs] .fs-on{display:none}
+body.is-fs [data-shkh-fs] .fs-off{display:inline-flex}
+.shkh-fs-toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);z-index:3000;display:flex;align-items:center;gap:6px;padding:6px 6px 6px 16px;border-radius:999px;background:#111827;color:#fff;border:1px solid #1e3a8a;font:700 13px/1.25 'Segoe UI',Arial,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.35);max-width:calc(100vw - 24px)}
+.shkh-fs-toast button{border:none;cursor:pointer;border-radius:999px;font:inherit}
+.shkh-fs-toast [data-act=go]{background:#2563eb;color:#fff;padding:8px 14px;font-weight:800;white-space:nowrap}
+.shkh-fs-toast [data-act=go]:hover{background:#1d4ed8}
+.shkh-fs-toast [data-act=no]{background:transparent;color:#94a3b8;width:30px;height:30px;font-size:18px}

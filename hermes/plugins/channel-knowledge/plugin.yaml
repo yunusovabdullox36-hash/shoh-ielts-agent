@@ -1,0 +1,11 @@
+name: channel-knowledge
+version: 1.3.0
+description: Source-linked IELTS retrieval, incoming attachment inspection and branded HTML drafts.
+provides_tools:
+  - search_channel_knowledge
+  - inspect_channel_attachment
+  - build_ieltsshokh_html
+  - find_shoh_skill
+  - shoh_status
+  - record_onboarding
+  - save_channel_knowledge

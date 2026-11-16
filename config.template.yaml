@@ -1,0 +1,54 @@
+model:
+  provider: __PROVIDER__
+  default: __MODEL__
+auth:
+  adopt_external_logins: false
+toolsets: [skills, channel-knowledge, web, memory, session_search, vision, image_gen, tts, connections, cronjob, todo, no_mcp]
+platform_toolsets:
+  cli: [skills, channel-knowledge, web, memory, session_search, vision, image_gen, tts, connections, cronjob, todo, no_mcp]
+  local: [skills, channel-knowledge, web, memory, session_search, vision, image_gen, tts, connections, cronjob, todo, no_mcp]
+  telegram: [skills, channel-knowledge, web, memory, session_search, vision, image_gen, tts, connections, cronjob, todo, no_mcp]
+tools:
+  tool_search:
+    enabled: false
+plugins:
+  enabled: [channel-knowledge]
+  entries:
+    channel-knowledge:
+      settings:
+        local_retrieval_enabled: true
+        knowledge_dir: __KNOWLEDGE_DIR__
+stt:
+  enabled: true
+  provider: local
+  local:
+    model: small
+tts:
+  provider: edge
+  edge:
+    voice: uz-UZ-MadinaNeural
+image_gen:
+  provider: __IMAGE_PROVIDER__
+voice:
+  auto_tts: true
+platforms:
+  telegram:
+    enabled: true
+    extra:
+      command_menu:
+        max_commands: 5
+        priority_mode: replace
+        priority: [new, stop, retry, voice, help]
+    allow_admin_from: [__ADMIN_IDS__]
+    user_allowed_commands: [new, stop, retry, undo, voice]
+telemetry:
+  shared_metrics:
+    enabled: false
+    send: false
+display:
+  busy_input_mode: queue
+  platforms:
+    telegram:
+      busy_ack_detail: false
+      busy_steer_ack_enabled: false
+      long_running_notifications: false

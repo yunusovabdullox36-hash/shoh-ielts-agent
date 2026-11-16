@@ -1,0 +1,95 @@
+diff --git a/gateway/platforms/base.py b/gateway/platforms/base.py
+index 2f093bc706..87d44ba744 100644
+--- a/gateway/platforms/base.py
++++ b/gateway/platforms/base.py
+@@ -1418,10 +1418,20 @@ def cache_document_from_bytes(data: bytes, filename: str) -> str:
+     """Save raw document bytes to the cache as ``doc_{uuid12}_{original_name}`` and return
+     the absolute path; raises ValueError if the sanitized path escapes the cache directory."""
+     cache_dir = get_document_cache_dir()
+-    # Sanitize: strip directory components, null bytes, and control characters
+-    safe_name = (Path(filename).name if filename else "document").replace("\x00", "").strip()
+-    if not safe_name or safe_name in {".", ".."}:
++    # Telegram and other senders can supply names that are legal on their
++    # device but cannot be written on Windows. Keep the original display name
++    # in CachedMedia and use only a portable leaf name on disk.
++    leaf_name = re.split(r"[/\\]", filename or "")[-1]
++    safe_name = re.sub(r'[<>:"|?*\x00-\x1f\x7f]', "_", leaf_name).strip().rstrip(". ")
++    if not safe_name:
+         safe_name = "document"
++    if len(safe_name.encode("utf-8", errors="replace")) > 180:
++        stem, suffix = os.path.splitext(safe_name)
++        suffix = suffix if len(suffix.encode("utf-8", errors="replace")) <= 24 else ""
++        stem = (stem if suffix else safe_name)
++        safe_name = stem.encode("utf-8", errors="replace")[:180 - len(suffix.encode("utf-8"))].decode(
++            "utf-8", errors="ignore"
++        ).rstrip(". ") + suffix
+     filepath = cache_dir / f"doc_{uuid.uuid4().hex[:12]}_{safe_name}"
+     # Final safety check: ensure path stays inside cache dir
+     if not filepath.resolve().is_relative_to(cache_dir.resolve()):
+@@ -1473,7 +1483,7 @@ def cache_media_bytes(data: bytes, *, filename: str = "", mime_type: str = "",
+     anything not image/video/audio is a document."""
+     ext = _resolve_media_ext(filename, mime_type)
+     mime = (mime_type or "").lower()
+-    display = re.sub(r"[^\w.\- ]", "_", filename) if filename else (ext.lstrip(".") or "file")
++    display = re.sub(r"[^\w.\- |;]", "_", filename) if filename else (ext.lstrip(".") or "file")
+     # (kind, ext->mime table, default ext, cache fn, whether a matching caller MIME passes through)
+     for kind, table, default_ext, cache_fn, passthrough in (
+             ("image", SUPPORTED_IMAGE_DOCUMENT_TYPES, ".jpg", cache_image_from_bytes, True),
+diff --git a/tests/gateway/test_document_cache.py b/tests/gateway/test_document_cache.py
+index ed92edda40..fadcf9b5ff 100644
+--- a/tests/gateway/test_document_cache.py
++++ b/tests/gateway/test_document_cache.py
+@@ -5,9 +5,12 @@ Covers: get_document_cache_dir, cache_document_from_bytes,
+         cleanup_document_cache, SUPPORTED_DOCUMENT_TYPES.
+ """
+ 
++import asyncio
+ import os
+ import time
+ from pathlib import Path
++from types import SimpleNamespace
++from unittest.mock import AsyncMock
+ 
+ import pytest
+ 
+@@ -63,6 +66,40 @@ class TestCacheDocumentFromBytes:
+         path = cache_document_from_bytes(b"data", "")
+         assert Path(path).read_bytes() == b"data"
+ 
++    def test_telegram_brand_filename_uses_portable_disk_name(self):
++        from gateway.platforms.base import cache_media_bytes
++
++        data = b"<html><p>IELTS</p></html>"
++        result = cache_media_bytes(data, filename="sh|kh - Writing Mock.html", mime_type="text/html")
++        assert result.display_name == "sh|kh - Writing Mock.html"
++        assert Path(result.path).name.endswith("_sh_kh - Writing Mock.html")
++        assert Path(result.path).read_bytes() == data
++
++    def test_windows_path_characters_and_long_unicode_leaf(self):
++        path = Path(cache_document_from_bytes(b"data", "C:\\outside\\a:b?*.html. "))
++        assert path.parent == get_document_cache_dir()
++        assert path.name.endswith("_a_b__.html")
++        long_path = Path(cache_document_from_bytes(b"data", "文" * 200 + ".html"))
++        assert long_path.suffix == ".html"
++        assert len(long_path.name.encode("utf-8")) < 255
++
++    def test_telegram_adapter_caches_large_html_with_pipe_without_inline_text(self):
++        from plugins.platforms.telegram.adapter import TelegramAdapter
++
++        data = b"<html><p>Writing Mock</p></html>" + b" " * 110_000
++        file = SimpleNamespace(download_as_bytearray=AsyncMock(return_value=bytearray(data)))
++        doc = SimpleNamespace(file_name="sh|kh - Writing Mock.html", mime_type="text/html",
++                              file_size=len(data), get_file=AsyncMock(return_value=file))
++        adapter = SimpleNamespace(_max_doc_bytes=20 * 1024 * 1024,
++                                  _surface_media_cache_failure=AsyncMock())
++        event = SimpleNamespace(text="Please read this.")
++        assert not asyncio.run(TelegramAdapter._cache_inbound_document(adapter, SimpleNamespace(document=doc), event))
++        adapter._surface_media_cache_failure.assert_not_called()
++        assert event.media_text_inlined == [False]
++        assert event.text == "Please read this."
++        assert Path(event.media_urls[0]).name.endswith("_sh_kh - Writing Mock.html")
++        assert Path(event.media_urls[0]).read_bytes() == data
++
+ 
+ # ---------------------------------------------------------------------------
+ # TestCleanupDocumentCache

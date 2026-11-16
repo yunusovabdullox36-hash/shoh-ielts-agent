@@ -1,0 +1,35 @@
+diff --git a/gateway/run_inbound.py b/gateway/run_inbound.py
+index fe57f8b995..8f68ecdbb0 100644
+--- a/gateway/run_inbound.py
++++ b/gateway/run_inbound.py
+@@ -1770,6 +1770,16 @@ class GatewayInboundMixin(GatewayInboundHooksMixin, GatewayInboundTranscriptionM
+         image_paths, audio_paths, audio_file_paths, video_paths = self._classify_inbound_media(event, _pending_stt_prepared)
+         if image_paths:
+             message_text = await self._enrich_inbound_images(source, session_key, message_text, image_paths)
++            from hermes_constants import get_hermes_home
++            if source.platform == Platform.TELEGRAM and get_hermes_home().name == "ieltschannel":
++                originals = [
++                    os.path.basename(path) for path in image_paths
++                    if os.path.basename(path).startswith("img_")
++                ]
++                if originals:
++                    root = get_hermes_home() / "cache" / "images"
++                    notes = "\n".join(f"[Original Telegram image cached at: {root / name}]" for name in originals)
++                    message_text = f"{notes}\n\n{message_text}"
+         if audio_paths:
+             message_text = await self._enrich_inbound_voice(event, source, message_text, audio_paths)
+         message_text = self._prepend_inbound_media_file_notes(
+diff --git a/plugins/platforms/telegram/adapter.py b/plugins/platforms/telegram/adapter.py
+index ce67fdbcda..f76e31fe9f 100644
+--- a/plugins/platforms/telegram/adapter.py
++++ b/plugins/platforms/telegram/adapter.py
+@@ -6275,6 +6275,9 @@ class TelegramAdapter(TelegramContactMixin, TelegramHeldInboundMixin, TelegramRe
+             # PDF/zip/docx have decodable ASCII headers. Binary files are surfaced as a cached path only.
+             MAX_TEXT_INJECT_BYTES = 100 * 1024
+             _is_text = ext in _TEXT_INJECT_EXTENSIONS or (doc_mime or "").startswith("text/")
++            profile_home = getattr(self, "_update_receipt_dir", None)
++            if ext in {".html", ".htm"} and getattr(profile_home, "name", "") == "ieltschannel":
++                _is_text = False  # Shoh uses its bounded HTML reader instead of raw inlining.
+             if _is_text and len(raw_bytes) <= MAX_TEXT_INJECT_BYTES:
+                 try:
+                     text_content = raw_bytes.decode("utf-8")
