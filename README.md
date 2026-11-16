@@ -18,7 +18,7 @@ Shoh — IELTS ustozining Telegram'dagi yordamchisi. U [Hermes Agent](https://gi
 
 ```text
 Shu repo'ni clone qil va ichidagi CLAUDE.md bo'yicha Shoh agentini shu kompyuterga to'liq o'rnat:
-https://github.com/<owner>/shoh-ielts-agent
+https://github.com/yunusovabdullox36-hash/shoh-ielts-agent
 Har bosqichni tekshir, men bilan o'zbekcha gaplash, oxirida hisobot ber.
 ```
 
