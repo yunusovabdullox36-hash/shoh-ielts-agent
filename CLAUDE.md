@@ -99,7 +99,8 @@ Tekshiruv: `hermes -p ieltschannel -z "Salom, sen kimsan?"` → o'zbekcha javob 
 ## 7. Telegram bot
 
 1. Egasi: `! hermes -p ieltschannel gateway setup` → bot token va ruxsat berilgan user ID'larni kiritadi. `install.ps1` ID'larni `.env`dagi `TELEGRAM_ALLOWED_USERS`ga oldindan yozib qo'ygan.
-2. Doimiy ishlashi uchun (Windows login'da avtomatik ishga tushadi): `hermes -p ieltschannel gateway install`. Faqat sinash uchun: `hermes -p ieltschannel gateway run`.
+2. Doimiy ishlash: `install.ps1` 7-qadamda `service\install-autostart.ps1` ni o'zi chaqiradi. U `Shoh_Gateway_Watchdog_ieltschannel` nomli yashirin vazifani o'rnatadi: vazifa Windows'ga kirilganda va har 5 daqiqada ishga tushib, `hermes -p ieltschannel gateway start` buyrug'ini beradi. Token kiritilgach: `! hermes -p ieltschannel gateway restart`. Tekshir: `Get-ScheduledTask Shoh_Gateway_Watchdog_ieltschannel` va `logs\shoh-watchdog.log`.
+   **`gateway run` ni sen (agent) o'z terminalingda ishga tushirma.** Sessiya yoki terminal tugashi bilan Windows uni Job Object bilan birga o'ldiradi va bot jim qoladi. Bu 2026-11-19 da isbotlangan: shunday ishga tushirilgan gateway'lar ~1 daqiqada chiqish yozuvisiz o'lgan. `gateway start` esa `CREATE_BREAKAWAY_FROM_JOB` bilan ota-jarayondan uziladi.
 3. Logni tekshir: `%LOCALAPPDATA%\hermes\profiles\ieltschannel\logs\gateway.log` ichida `Connected to Telegram (polling mode)` va `set_my_commands OK` qatorlari bo'lsin.
 4. Telegram timeout yoki `Bad Gateway` chiqsa, Hermes o'zi qayta urinadi (fallback IP'lar bilan). 5 daqiqada ham ulanmasa, internet yoki VPN'ni tekshir.
 

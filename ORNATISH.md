@@ -44,6 +44,7 @@ Skript quyidagilarni bajaradi:
 4. `config.yaml`ni yozadi. Ichida maxfiy kalit yo'q.
 5. Hermes manba kodiga 2 ta patch qo'llaydi (Telegram rasm yo'li va Windows uchun xavfsiz fayl nomlari). Har bir patch avval `--check` bilan tekshiriladi.
 6. Yoqilgan vositalar ro'yxatini chiqaradi.
+7. Botni avtomatik ishga tushirishni o'rnatadi. Bu `Shoh_Gateway_Watchdog_ieltschannel` nomli vazifa bo'lib, ikki holatda ishlaydi: Windows'ga kirilganda va har 5 daqiqada. Bot yashirin ishlaydi, terminal oynasi ochiq turmaydi. Kompyuter o'chib yonsa yoki bot yiqilsa, u 5 daqiqa ichida o'zi qayta ishga tushadi. Kerak bo'lmasa `-NoAutostart` bilan o'tkazib yuboriladi.
 
 Keyingi qadamlarni egasi o'zi bajaradi, chunki parol va token faqat unda bo'ladi:
 
@@ -51,8 +52,17 @@ Keyingi qadamlarni egasi o'zi bajaradi, chunki parol va token faqat unda bo'ladi
 hermes -p ieltschannel model           # model akkauntiga kirish
 hermes -p ieltschannel gateway setup   # Telegram bot token + ruxsat berilgan user ID
 hermes -p ieltschannel -z "Kanal brend qoidalari qanday?"   # tezkor sinov
-hermes -p ieltschannel gateway run     # botni ishga tushirish
+hermes -p ieltschannel gateway restart # tokenni qo'llash (avtostart allaqachon o'rnatilgan)
 ```
+
+> ⚠️ Botni `gateway run` buyrug'i bilan terminalda ishga tushirmang. Bunday holatda terminal yopilsa yoki uni ochgan agent sessiyasi tugasa, bot jim o'ladi va o'zi qayta ishga tushmaydi. Botni avtomatik ishga tushirish vazifasi o'zi boshqaradi.
+
+**Bot javob bermasa:**
+- `D:\Hermes\logs\shoh-watchdog.log` faylini oching. Unda bot qachon va nima sababdan qayta ishga tushgani yozilgan.
+- `hermes -p ieltschannel gateway status` buyrug'ini bering.
+- Kompyuter o'chiq bo'lsa bot ishlamaydi. Botning 24/7 ishlashi uchun doim yoniq kompyuter yoki server kerak.
+- Avtostartni qayta o'rnatish: `powershell -ExecutionPolicy Bypass -File .\service\install-autostart.ps1 -HermesHome "D:\Hermes"`.
+- Avtostartni o'chirish: shu buyruqqa `-Uninstall` qo'shiladi.
 
 ## Bilim bazasini to'ldirish
 

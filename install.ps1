@@ -11,7 +11,8 @@ param(
     [string]$AdminTelegramId = "",
     [string]$TeacherTelegramId = "",
     [switch]$SkipPatches,
-    [switch]$NoAlias
+    [switch]$NoAlias,
+    [switch]$NoAutostart
 )
 # Native tools (hermes, git) write progress to stderr; PS 5.1 would turn that into a
 # terminating error under "Stop". Check $LASTEXITCODE for them and use -ErrorAction Stop on file ops.
@@ -136,13 +137,22 @@ if (-not $SkipPatches) {
 # 6. Verify
 Step "Verifying enabled tools"
 & $exe -p $ProfileName tools --summary
+
+# 7. Autostart: hidden watchdog task (logon + every 5 min). The bot restarts by itself after a reboot
+#    or a crash, and no terminal window stays open. Never run the bot with `gateway run` in a terminal:
+#    closing that terminal (or the agent session that opened it) kills the bot.
+if (-not $NoAutostart) {
+    Step "Installing hidden gateway autostart (scheduled task)"
+    & (Join-Path $pkg "service\install-autostart.ps1") -HermesHome $HermesHome -ProfileName $ProfileName
+}
 Write-Host ""
 Write-Host "Done. Next (owner steps):" -ForegroundColor Green
 Write-Host "  1. Model login ($Model): $($m[3])"
 Write-Host "     Fallback so Shoh never stops on a rate limit: hermes -p $ProfileName fallback add"
 Write-Host "  2. Telegram bot:    hermes -p $ProfileName gateway setup   (bot token + allowed user id)"
 Write-Host "  3. Smoke test:      hermes -p $ProfileName -z ""Kanal brend qoidalari qanday?"""
-Write-Host "  4. Start gateway:   hermes -p $ProfileName gateway run"
+Write-Host "  4. Apply bot token: hermes -p $ProfileName gateway restart   (autostart is installed: hidden, survives reboot)"
+Write-Host "     Do NOT use 'gateway run' in a terminal - closing the terminal stops the bot."
 Write-Host "  5. Google apps:     hermes -p $ProfileName connectors connect   (or ask Shoh in Telegram)"
 Write-Host "  6. First chat: Shoh runs onboarding (teacher, channels, brand, Obsidian, Google, voice)."
 Write-Host "  Updates: admin sends /update in Telegram, or run: hermes update"
