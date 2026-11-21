@@ -2,14 +2,11 @@
 
 Shoh — IELTS ustozining Telegram'dagi yordamchisi. U [Hermes Agent](https://github.com/NousResearch/hermes-agent) ustida ishlaydi. Imkoniyatlari:
 
-- IELTSSHOKH CDI uslubida Writing va Reading HTML materiallarini yasaydi.
-- PDF, HTML va rasmlarni o'qiydi va tahlil qiladi.
-- Kanal, brend va qarorlar bazasidan manbasini ko'rsatib javob beradi.
-- Ovozli xabarni tushunadi (o'zbekcha va inglizcha) va ovoz bilan javob beradi.
-- Rasmni tahlil qiladi va yangi rasm yaratadi.
-- Marketing, xodim yollash va media rejalarini tuzadi.
-- Xotirasi bor: ustoz talablarini eslab qoladi.
-- Birinchi suhbatda o'zini sozlaydi: ustoz, kanallar, Obsidian, Google.
+- **Ovoz (Audio & Voice):** Ustoz yuborgan audio va ovozli xabarlarni to'liq qabul qiladi, tushunadi (Whisper orqali o'zbek/ingliz tilini avto-aniqlaydi) va o'zi ham tabiiy ovoz bilan javob qaytara oladi.
+- **Multimodal (Vision & Files):** PDF, rasmlar, jadvallarni o'qiydi va tahlil qiladi.
+- **IELTS Materiallari:** IELTSSHOKH CDI uslubida Writing va Reading HTML materiallarini avtomatlashtirilgan tarzda tayyorlaydi.
+- **Kanal va brend bilimi:** Tasdiqlangan bilim bazasiga asoslanib qoralamalar beradi.
+- **Xotira va adaptatsiya:** Ustoz talablarini doimiy eslab qoladi.
 
 ## Yangi kompyuterga o'rnatish (Claude Code bilan)
 
